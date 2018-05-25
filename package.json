@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/petrica/wav-recorder.git"
+    "url": "git+https://github.com/vlinde/wav-recorder.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -19,7 +19,7 @@
   "author": "Petrica Martinescu <petrica@martinescu.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/petrica/wav-recorder/issues"
+    "url": "https://github.com/vlinde/wav-recorder/issues"
   },
-  "homepage": "https://github.com/petrica/wav-recorder#readme"
+  "homepage": "https://github.com/vlinde/wav-recorder#readme"
 }
