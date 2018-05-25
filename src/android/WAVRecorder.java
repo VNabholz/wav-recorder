@@ -13,44 +13,42 @@ import android.media.AudioFormat;
 import android.net.Uri;
 
 public class WAVRecorder extends CordovaPlugin {
-	public static String TAG = "WAVRecorder";
-	HashMap<String, ExtAudioRecorder> players;
+    public static String TAG = "WAVRecorder";
+    HashMap<String, ExtAudioRecorder> players;
     private CallbackContext messageChannel;
 
-    public static String [] permissions = { Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public static String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     public static int RECORD_AUDIO = 0;
     public static int WRITE_EXTERNAL_STORAGE = 1;
     public String identifier = "";
-    public int sampleRate ;
+    public int sampleRate;
     public int channels;
     public int encoding;
     public String target;
 
-	public WAVRecorder() {
-		this.players = new HashMap<String, ExtAudioRecorder>();
-	}
+    public WAVRecorder() {
+        this.players = new HashMap<String, ExtAudioRecorder>();
+    }
 
-	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		CordovaResourceApi resourceApi = webView.getResourceApi();
-		PluginResult.Status status = PluginResult.Status.OK;
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        CordovaResourceApi resourceApi = webView.getResourceApi();
+        PluginResult.Status status = PluginResult.Status.OK;
         String result = "";
         messageChannel = callbackContext;
 
         if (action.equals("record")) {
             this.identifier = args.getString(0);
+            this.startRecording();
         }
         if (action.equals("recordForMillis")) {
             this.startRecording(args.getString(0), args.getInt(1));
-        }
-        else if (action.equals("stop")) {
-        	this.stopRecording(args.getString(0));
-        }
-        else if (action.equals("release")) {
-        	boolean back = this.release(args.getString(0));
+        } else if (action.equals("stop")) {
+            this.stopRecording(args.getString(0));
+        } else if (action.equals("release")) {
+            boolean back = this.release(args.getString(0));
             callbackContext.sendPluginResult(new PluginResult(status, back));
             return true;
-        }
-        else if (action.equals("create")) {
+        } else if (action.equals("create")) {
 
             identifier = args.getString(0);
             target = args.getString(1);
@@ -68,17 +66,15 @@ public class WAVRecorder extends CordovaPlugin {
             else encoding = AudioFormat.ENCODING_PCM_16BIT;
 
             this.promptForRecord();
-        }
-        else if (action.equals("locate")) {
+        } else if (action.equals("locate")) {
 
             String id = args.getString(0);
 
-				ExtAudioRecorder audio = this.players.get(id);
+            ExtAudioRecorder audio = this.players.get(id);
 
             callbackContext.success(audio.getFilePath());
-	}
-        else {
-        	return false;
+        } else {
+            return false;
         }
 
         callbackContext.sendPluginResult(new PluginResult(status, result));
@@ -86,33 +82,33 @@ public class WAVRecorder extends CordovaPlugin {
         return true;
     }
 
-	public void startRecording(String id) {
+    public void startRecording(String id) {
 
-		ExtAudioRecorder audio = this.players.get(id);
-		if (audio != null) {
-			audio.prepare();
-			audio.start();
-		}
-  }
+        ExtAudioRecorder audio = this.players.get(id);
+        if (audio != null) {
+            audio.prepare();
+            audio.start();
+        }
+    }
 
 
-		public void startRecording(String id, int durationMS) {
-			ExtAudioRecorder audio = this.players.get(id);
-			if (audio != null) {
-				audio.prepare();
-				audio.recordFor(durationMS);
-			}
-	  }
+    public void startRecording(String id, int durationMS) {
+        ExtAudioRecorder audio = this.players.get(id);
+        if (audio != null) {
+            audio.prepare();
+            audio.recordFor(durationMS);
+        }
+    }
 
-	public void stopRecording(String id) {
-		ExtAudioRecorder audio = this.players.get(id);
-		if (audio != null) {
-			audio.stop();
-			audio.reset();
-		}
-	}
+    public void stopRecording(String id) {
+        ExtAudioRecorder audio = this.players.get(id);
+        if (audio != null) {
+            audio.stop();
+            audio.reset();
+        }
+    }
 
-	private boolean release(String id) {
+    private boolean release(String id) {
         if (!this.players.containsKey(id)) {
             return false;
         }
@@ -122,7 +118,7 @@ public class WAVRecorder extends CordovaPlugin {
         return true;
     }
 
-	/**
+    /**
      * Stop all audio recorders on navigate.
      */
     @Override
@@ -140,42 +136,29 @@ public class WAVRecorder extends CordovaPlugin {
         this.players.clear();
     }
 
-    private void promptForRecord()
-    {
-        if(PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE])  &&
-                PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
-
-            this.startRecording();
-        }
-        else if(PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO]))
-        {
+    private void promptForRecord() {
+        if (!PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
             getWritePermission(WRITE_EXTERNAL_STORAGE);
         }
-        else
-        {
+
+        if (!PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE])) {
             getMicPermission(RECORD_AUDIO);
         }
-
     }
 
-    protected void getWritePermission(int requestCode)
-    {
+    protected void getWritePermission(int requestCode) {
         PermissionHelper.requestPermission(this, requestCode, permissions[WRITE_EXTERNAL_STORAGE]);
     }
 
 
-    protected void getMicPermission(int requestCode)
-    {
+    protected void getMicPermission(int requestCode) {
         PermissionHelper.requestPermission(this, requestCode, permissions[RECORD_AUDIO]);
     }
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) throws JSONException
-    {
-        for(int r:grantResults)
-        {
-            if(r == PackageManager.PERMISSION_DENIED)
-            {
+                                          int[] grantResults) throws JSONException {
+        for (int r : grantResults) {
+            if (r == PackageManager.PERMISSION_DENIED) {
 
                 this.setState(ExtAudioRecorder.State.PERMISSION_DENIED);
                 return;
