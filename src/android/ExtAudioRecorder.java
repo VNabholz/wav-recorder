@@ -3,9 +3,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.apache.cordova.PermissionHelper;
+import org.apache.cordova.PluginResult;
 import org.apache.cordova.PluginResult.Status;
 import org.json.JSONArray;
+import org.json.JSONException;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
@@ -55,7 +60,7 @@ public class ExtAudioRecorder
 	* ERROR : reconstruction needed
 	* STOPPED: reset needed
 	*/
-	public enum State {INITIALIZING, READY, RECORDING, ERROR, STOPPED};
+	public enum State {INITIALIZING, READY, RECORDING, ERROR, STOPPED, PERMISSION_DENIED};
 
 	// The interval in which the recorded samples are output to the file
 	// Used only in uncompressed mode
@@ -138,6 +143,7 @@ public class ExtAudioRecorder
 			if (randomAccessWriter != null) {
 				try
 				{
+
 					randomAccessWriter.write(buffer); // Write buffer to file
 					payloadSize += buffer.length;
 					if (bSamples == 16)
@@ -243,6 +249,7 @@ public class ExtAudioRecorder
 			this.setState(State.INITIALIZING);
 		} catch (Exception e)
 		{
+
 			if (e.getMessage() != null)
 			{
 				Log.e(ExtAudioRecorder.class.getName(), e.getMessage());
@@ -260,7 +267,7 @@ public class ExtAudioRecorder
 	/**
 	 * Sets output file path, call directly after construction/reset.
 	 *
-	 * @param output file path
+	 * @param argPath file path
 	 *
 	 */
 	public void setOutputFile(String argPath)
@@ -276,10 +283,10 @@ public class ExtAudioRecorder
 				else
 				{
 					if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-						filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + argPath;
-	        } else {
-	        	filePath = "/data/data/" + handler.cordova.getActivity().getPackageName() + argPath;
-	        }
+						filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + argPath;
+					} else {
+						filePath = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + argPath;
+					}
 				}
 				Log.d(ExtAudioRecorder.class.getName(), "writing to "+filePath);
 			}
