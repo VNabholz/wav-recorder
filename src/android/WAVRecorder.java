@@ -38,7 +38,7 @@ public class WAVRecorder extends CordovaPlugin {
 
         if (action.equals("record")) {
             this.identifier = args.getString(0);
-            this.startRecording();
+            this.promptForRecord(true);
         }
         if (action.equals("recordForMillis")) {
             this.startRecording(args.getString(0), args.getInt(1));
@@ -65,7 +65,8 @@ public class WAVRecorder extends CordovaPlugin {
             if (encoding == 8) encoding = AudioFormat.ENCODING_PCM_8BIT;
             else encoding = AudioFormat.ENCODING_PCM_16BIT;
 
-            this.promptForRecord();
+            this.promptForRecord(false);
+
         } else if (action.equals("locate")) {
 
             String id = args.getString(0);
@@ -136,15 +137,20 @@ public class WAVRecorder extends CordovaPlugin {
         this.players.clear();
     }
 
-    private void promptForRecord() {
-        if (!PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
+    private void promptForRecord(Boolean start_record) {
+        if (PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE]) &&
+                PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
+            if (start_record) {
+                this.startRecording();
+            }
+        } else if (PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
             getWritePermission(WRITE_EXTERNAL_STORAGE);
-        }
-
-        if (!PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE])) {
+        } else {
             getMicPermission(RECORD_AUDIO);
         }
+
     }
+
 
     protected void getWritePermission(int requestCode) {
         PermissionHelper.requestPermission(this, requestCode, permissions[WRITE_EXTERNAL_STORAGE]);
@@ -164,7 +170,7 @@ public class WAVRecorder extends CordovaPlugin {
                 return;
             }
         }
-        promptForRecord();
+        promptForRecord(false);
     }
 
     private void setState(ExtAudioRecorder.State state) {
