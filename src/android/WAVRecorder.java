@@ -17,7 +17,7 @@ public class WAVRecorder extends CordovaPlugin {
     HashMap<String, ExtAudioRecorder> players;
     private CallbackContext messageChannel;
 
-    public static String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    public static String[] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_MEDIA_AUDIO};
     public static int RECORD_AUDIO = 0;
     public static int WRITE_EXTERNAL_STORAGE = 1;
     public String identifier = "";
@@ -138,7 +138,7 @@ public class WAVRecorder extends CordovaPlugin {
     }
 
     private void promptForRecord(Boolean start_record) {
-        if (PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE]) &&
+        if ((android.os.Build.VERSION.SDK_INT >= 33 || PermissionHelper.hasPermission(this, permissions[WRITE_EXTERNAL_STORAGE])) &&
                 PermissionHelper.hasPermission(this, permissions[RECORD_AUDIO])) {
             if (start_record) {
                 this.startRecording();
